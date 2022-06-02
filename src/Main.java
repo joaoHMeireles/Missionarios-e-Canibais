@@ -24,10 +24,10 @@ public class Main {
         jogo();
     }
 
-    private static int[] pegarQuantidade(int lista){
-        int[] quantidade = {0,0};
+    private static int[] pegarQuantidade(int lista) {
+        int[] quantidade = {0, 0};
 
-        if(lista == 2){
+        if (lista == 2) {
             for (Personagem personagem : lado2) {
                 if (personagem != null) {
                     if (personagem instanceof Canibal) {
@@ -37,7 +37,7 @@ public class Main {
                     }
                 }
             }
-        } else if(lista == 1){
+        } else if (lista == 1) {
             for (Personagem personagem : lado1) {
                 if (personagem != null) {
                     if (personagem instanceof Canibal) {
@@ -62,8 +62,8 @@ public class Main {
         return quantidade;
     }
 
-    private static void estagio(){
-        int[] quantidade1 = pegarQuantidade(1), quantidade2 = pegarQuantidade(2),quantidade3 = pegarQuantidade(3);
+    private static void estagio() {
+        int[] quantidade1 = pegarQuantidade(1), quantidade2 = pegarQuantidade(2), quantidade3 = pegarQuantidade(3);
 
         System.out.println("Têm " + quantidade2[0] + " canibais e " + quantidade2[1] + " missionários do lado esquerdo do rio\n" +
                 "Têm " + quantidade3[0] + " canibais e " + quantidade3[1] + " missionários na jangada\n" +
@@ -74,7 +74,7 @@ public class Main {
         estagio();
         String lado = "";
 
-        if(turno %2 == 0){
+        if (turno % 2 == 0) {
             lado = "esquerdo";
         } else {
             lado = "direito";
@@ -97,57 +97,25 @@ public class Main {
                 case 5 -> mandarJangada();
                 default -> throw new OpcaoInvalidaException();
             }
-        }catch(RuntimeException idiota){
+        } catch (PerdeuException idiota) {
+            System.out.println(idiota.getClass().getSimpleName() + ": " + idiota.getMessage() + "\n");
+            comecarNovoJogo();
+        } catch (RuntimeException idiota) {
             System.out.println(idiota.getClass().getSimpleName() + ": " + idiota.getMessage() + "\n");
         } finally {
+            checarVitoria();
             jogo();
         }
     }
 
-    public static boolean[] temClasses(int lado){
-        boolean[] tem = {false, false};
-        if(lado == 1) {
-            for (int i = 0; i < lado1.size(); i++) {
-                if (lado1.get(i) instanceof Missionario) {
-                    tem[i] = true;
-                }
-                if (lado1.get(i) instanceof Canibal) {
-                    tem[i] = true;
-                }
-            }
-        } else {
-            for (int i = 0; i < lado2.size(); i++) {
-                if (lado2.get(i) instanceof Missionario) {
-                    tem[i] = true;
-                }
-                if (lado2.get(i) instanceof Canibal) {
-                    tem[i] = true;
-                }
-            }
-        }
-
-        return tem;
-    }
-
-
-    public static void checarCondicoes(){
-        int[] quantidade1 = pegarQuantidade(1), quantidade2 = pegarQuantidade(2);
-        boolean checar[];
-
-        //fazer condição de cada lado do rio pra dizer se perdeu ou não
-        if(quantidade1[0] != 0 && quantidade1[1] != 0 && quantidade1[0] > quantidade1[1]){
-            throw new PerdeuException();
-        }
-        if(quantidade2[0] != 0 && quantidade2[1] != 0 && quantidade2[0] > quantidade2[1]){
-            throw new PerdeuException();
-        }
-
+    public static void checarVitoria() {
+        int[] quantidade2 = pegarQuantidade(2);
         int quantidadeTotal2 = quantidade2[0] + quantidade2[1];
 
-        if(quantidadeTotal2 == 6){
+        if (quantidadeTotal2 == 6) {
             System.out.println("Parabéns você ganhou!");
             System.out.println("Deseja jogar novamente? \n1 - Sim \n2 - Não");
-            switch(sc.nextInt()){
+            switch (sc.nextInt()) {
                 case 1 -> comecarNovoJogo();
                 case 2 -> System.exit(0);
                 default -> throw new OpcaoInvalidaException();
@@ -155,16 +123,37 @@ public class Main {
         }
     }
 
+    public static void checarCondicoes() {
+        int[] quantidade1 = pegarQuantidade(1), quantidade2 = pegarQuantidade(2), quantidade3 = pegarQuantidade(3);
+        boolean checar[];
+
+        if (quantidade1[0] != 0 && quantidade1[1] != 0 && quantidade1[0] > quantidade1[1]) {
+            throw new PerdeuException();
+        }
+        if (quantidade2[0] != 0 && quantidade2[1] != 0 && quantidade2[0] > quantidade2[1]) {
+            throw new PerdeuException();
+        }
+        if (quantidade1[0] != 0  && quantidade3[0] != 0 && quantidade3[1] != 0 && quantidade1[0] + quantidade3[0] > quantidade3[1] + quantidade1[1]) {
+            throw new PerdeuException();
+        }
+        if (quantidade2[0] != 0  && quantidade3[0] != 0 && quantidade3[1] != 0 && quantidade2[0] + quantidade3[0] > quantidade3[1] + quantidade2[1]) {
+            throw new PerdeuException();
+        }
+
+        checarVitoria();
+
+    }
+
     private static void mandarJangada() {
         int quantJangada = 0;
 
-        for(int i = 0; i < jangada.length; i++){
-            if(jangada[i] != null) {
+        for (int i = 0; i < jangada.length; i++) {
+            if (jangada[i] != null) {
                 quantJangada++;
             }
         }
 
-        if(quantJangada == 0){
+        if (quantJangada == 0) {
             throw new JangadaVaziaException();
         } else {
             checarCondicoes();
@@ -172,33 +161,35 @@ public class Main {
         }
     }
 
-    public static void comecarNovoJogo(){
-        for(int i = 0; i < lado1.size(); i++){
-            lado1.remove(i);
+    public static void comecarNovoJogo() {
+        int tamanhoLado1 = lado1.size(), tamanhoLado2 = lado2.size();
+
+        for (int i = 0; i < tamanhoLado1; i++) {
+            lado1.remove(0);
         }
 
-        for(int i = 0; i < lado2.size(); i++){
-            lado2.remove(i);
+        for (int i = 0; i < tamanhoLado2; i++) {
+            lado2.remove(0);
         }
 
         Arrays.fill(jangada, null);
 
-        System.out.println("adicionou!");
+        lado1.add(new Canibal());
+        lado1.add(new Canibal());
+        lado1.add(new Canibal());
+        lado1.add(new Missionario());
+        lado1.add(new Missionario());
+        lado1.add(new Missionario());
 
-        lado1.add(new Canibal());
-        lado1.add(new Canibal());
-        lado1.add(new Canibal());
-        lado1.add(new Missionario());
-        lado1.add(new Missionario());
-        lado1.add(new Missionario());
+        turno = 1;
 
         jogo();
     }
 
-    public static ArrayList<Personagem> pegarLado(){
+    public static ArrayList<Personagem> pegarLado() {
         ArrayList<Personagem> lado;
 
-        if(Main.turno %2 == 0){
+        if (Main.turno % 2 == 0) {
             lado = Main.lado2;
         } else {
             lado = Main.lado1;
